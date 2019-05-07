@@ -4,39 +4,19 @@ from pygame.locals import *
 import cv2
 from gaze_tracking import GazeTracking
 
-currentPosition = [500, 368]
+import statistics
 
-
-def move_left():
-    currentPosition[0] -= 20
-
-
-def move_right():
-    currentPosition[0] += 20
-
-
-def move_up():
-    currentPosition[1] -= 20
-    currentPosition[0] -= 40
-
-
-def move_down():
-    currentPosition[1] += 20
-
-
-def find_average(coordinates):
-    coordinate_sum = 0
-    for point in coordinates:
-        coordinate_sum += point
-    return coordinate_sum / len(coordinates)
+currentPosition = [688, 368]
 
 
 pygame.init()
 
+pygame.mixer.music.load("ding.wav")
+
 windowCalibration = pygame.display.set_mode((0, 0), FULLSCREEN)
 
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
 
 f = open("calibration_settings.txt", "w+")
 
@@ -58,19 +38,16 @@ webcam = cv2.VideoCapture(0)
 
 #Store the values for calibration
 
-minXCoordinates = []
-minYCoordinates = []
-maxXCoordinates = []
-maxYCoordinates = []
-centerCoordinates = []
-minimumXCoordinate = 0
-maximumXCoordinate = 0
-minimumYCoordinate = 0
-maximumYCoordinate = 0
-ycoordinates = []
-currentXCoordinate = 0
-currentYCoordinate = 0
-while not done:
+eyeWidths = []
+
+leftXCoordinates = []
+leftYCoordinates = []
+rightXCoordinates = []
+rightYCoordinates = []
+xCoordinate = 0
+yCoordinate = 0
+wait_to = pygame.time.get_ticks() + 3000
+while done == False:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
@@ -81,15 +58,80 @@ while not done:
                 successful = False
     _, frame = webcam.read()
     gaze.refresh(frame)
-
+    #Clear all elements after changing state by using list.clear
+    eyeWidths.append(gaze.get_eye_width_left())
     if state == "center":
+        current_time = pygame.time.get_ticks()
+        if gaze.pupils_located:
+            leftXCoordinates.append(gaze.get_x_displacement_left())
+            #rightXCoordinates.append(gaze.get_x_displacement_right())
+        #centerXCoordinates.append()
+        #centerYCoordinates.append()
+        if current_time > wait_to:
+            #print "Going to right"
+            xCoordinate = (statistics.median(leftXCoordinates))
+            f.write(str(xCoordinate) + "\n")
+            leftXCoordinates = []
+            currentPosition = [1300, 368]
+            wait_to = pygame.time.get_ticks() + 3000
+            state = "right"
+            pygame.mixer.music.play()
+            
+    #elif state == "middle_right":
+    #    current_time = pygame.time.get_ticks()
+    #    if current_time > wait_to:
+    #        #print "Going to right"
+    #        currentPosition = [1300, 368]
+    #        wait_to = pygame.time.get_ticks() + 3000
+    #        state = "right"
     elif state == "right":
+        current_time = pygame.time.get_ticks()
+        if gaze.pupils_located:
+            leftXCoordinates.append(gaze.get_x_displacement_left())
+            #rightXCoordinates.append(gaze.get_x_displacement_right())
+        if current_time > wait_to:
+            xCoordinate = (statistics.median(leftXCoordinates))
+            f.write(str(xCoordinate) + "\n")
+            leftXCoordinates = []
+            #rightXCoordinates = []
+            currentPosition = [66, 368]
+            pygame.mixer.music.play()
+            wait_to = pygame.time.get_ticks() + 3000
+            state = "left"
+    #elif state == "middle_left":
+    #    current_time = pygame.time.get_ticks()
+    #    if current_time > wait_to:
+    #        currentPosition = [50, 368]
+    #        wait_to = pygame.time.get_ticks() + 3000
+    #        state = "middle_left"
     elif state == "left":
-    elif state == "up":
-    elif state == "down":
+        current_time = pygame.time.get_ticks()
+        if gaze.pupils_located:
+            leftXCoordinates.append(gaze.get_x_displacement_left())
+        if current_time > wait_to:
+            xCoordinate = (statistics.median(leftXCoordinates))
+            f.write(str(xCoordinate) + "\n")
+            leftXCoordinates = []
+            pygame.mixer.music.play()
+            #currentPosition = [677, 700]
+            #wait_to = pygame.time.get_ticks() + 3000
+            #state = "down"
+            myEyeWidth = statistics.median(eyeWidths)
+            f.write(str(myEyeWidth) + "\n")
+            done = True
+    #elif state == "down":
+    #    current_time = pygame.time.get_ticks()
+    #    if current_time > wait_to:
+    #        currentPosition = [677, 50]
+    #        wait_to = pygame.time.get_ticks() + 3000
+    #        state = "up"
+    #elif state == "up":
+    #    current_time = pygame.time.get_ticks()
+    #    if current_time > wait_to:
+    #        done = True
 
     windowCalibration.fill(WHITE)
-    pygame.draw.circle(windowCalibration, BLACK, currentPosition, 10)
+    pygame.draw.circle(windowCalibration, GREEN, currentPosition, 10)
     pygame.display.update()
 
 
@@ -110,13 +152,4 @@ From the example program, we create this object, then....
 # Maybe we need to have an array, and average the results of the extreme coordinates.
 # Example incorporating python library can take variable from here.
 # Possible to store the values on a file instead; nanti kalau ketemu algoritma lain bisa langsung pake.
-if successful:
-    f.write(str(minimumXCoordinate) + "\n")
-    f.write(str(maximumXCoordinate) + "\n")
-    f.write(str(minimumYCoordinate) + "\n")
-    f.write(str(maximumYCoordinate) + "\n")
-    print("Minimum X is " + str(minimumXCoordinate))
-    print("Maximum X is " + str(maximumXCoordinate))
-    print("Minimum Y is " + str(minimumYCoordinate))
-    print("Maximum Y is " + str(maximumYCoordinate))
 f.close()

@@ -139,23 +139,93 @@ class GazeTracking(object):
         if self.pupils_located:
             return self.eye_right.right_corner[0] - self.eye_right.left_corner[0]
 
-    def get_eye_height_left(self):
-        return None
-    def get_eye_width_right(self):
-        return None
+    def get_y_displacement_left(self):
+        #Best way I think is d
+        if self.pupils_located:
+            displacement = self.pupil_left_coords()[1] - self.eye_left.left_corner[1]
+            return displacement
+
+    def get_y_displacement_right(self):
+        if self.pupils_located:
+            displacement = self.pupil_right_coords()[1] - self.eye_right.left_corner[1]
+            return displacement
+    
+    def get_left_eye_left_corner(self):
+        
+        return self.eye_left.left_corner
+
+    def get_right_eye_left_corner(self):
+        if self.pupils_located:
+            return self.eye_right.right_corner
+
+    def get_x_displacement_left(self):
+        if self.pupils_located:
+            displacement_left = self.pupil_left_coords()[0] - self.eye_left.left_corner[0]
+            
+            return displacement_left
+    def get_x_displacement_right(self):
+        if self.pupils_located:
+            
+            displacement_right = self.pupil_right_coords()[0] - self.eye_right.left_corner[0]
+            return displacement_right
+    def get_vertical_position(self):
+        if self.pupils_located:
+            displacement_left = None
+            displacement_right = None
+
+    #We need to sesuaikan rationya, to accomodate different viewing distance.
 
     def get_x_coordinate(self):
         if self.pupils_located:
+            calibrationExists = os.path.isfile("calibration_settings.txt")
+            if calibrationExists:
+                f = open("calibration_settings.txt", "r")
+                data = f.readlines()
+                #First line: Pas ngeliat center
+                #Second line: Pas liat kanan
+                #Third line: Pas liat kiri
+				#We need to modify the thresholds according to how far our eyes
+                calibratedEyeWidth = data[3]
+                actualEyeWidth = self.get_eye_width_left()
+                adjustment_ratio = actualEyeWidth / float(calibratedEyeWidth)
+                centerX = float(data[0]) * adjustment_ratio
+                minX = float(data[1]) * adjustment_ratio
+                maxX = float(data[2]) * adjustment_ratio
+                #centerX = float(data[0]) 
+                #minX = float(data[1])
+                #maxX = float(data[2])
+                displacement = self.get_x_displacement_left()
+                #print "Displacement of X Coordinate is " + str(displacement)
+                if displacement > maxX:
+                    displacement = maxX
+                elif displacement < minX:
+                    displacement = minX
+                if displacement <= centerX:
+                    #That means we see right, thanks to the inversion at webcam
+                    try:
+                        #return 1366 - ((displacement - minX) / (centerX - minX)) * 688
+                        return 1306 - ((displacement - minX) / (centerX - minX)) * 623
+                    except ZeroDivisionError:
+					    #If division by zero then failsafenya return paling tengah
+					    return 683
+                else:
+                    try:
+                        #return ((maxX - displacement) / (maxX - centerX)) * 688
+                        return 60 + ((maxX - displacement) / (maxX - centerX)) * 623
+                    except ZeroDivisionError:
+                        return 673
+               
+            else:  
             #Take the region between the left corner and right corner, measure how much the displacement between center, and calculate the displacement against the 
-            displacement_left = self.pupil_left_coords()[0] - self.eye_left.left_corner[0]
-            print "Displacement left is " + str(displacement_left)
-            displacement_right = self.pupil_right_coords()[0] - self.eye_right.left_corner[0]
-            print "Displacement Right is " + str(displacement_right)
-            print "Eye Width is " + str(self.get_eye_width_left())
+                displacement_left = self.pupil_left_coords()[0] - self.eye_left.left_corner[0]
+                print "Displacement left is " + str(displacement_left)
+                displacement_right = self.pupil_right_coords()[0] - self.eye_right.left_corner[0]
+                print "Displacement Right is " + str(displacement_right)
+                print "Eye Width is " + str(self.get_eye_width_left())
             #print "X coordinate is " + str(((1- displacement_left / self.get_eye_width_left()) + (1-displacement_right / self.get_eye_width_right())) / 2 * 1366)
-            ratio_left = 1 - (displacement_left / self.get_eye_width_left())
-            ratio_right = 1 - (displacement_right / self.get_eye_width_right())
-            return ratio_left * 1366
+                ratio_left = 1 - (displacement_left / self.get_eye_width_left())
+            #ratio_right = 1 - (displacement_right / self.get_eye_width_right())
+                return ratio_left * 1366
 
     def get_y_coordinate(self):
         return None
@@ -169,7 +239,7 @@ class GazeTracking(object):
             x_left, y_left = self.pupil_left_coords()
             x_right, y_right = self.pupil_right_coords()
             #timmy
-            left_eye_left_corner, left_eye_right_corner = (self.eye_left.left_corner, self.eye_left.right_corner)
+            left_eye_left_corner, left_eye_right_corner = (self.eye_left.left_corner, self.eye_left.right_corner) 
             right_eye_left_corner, right_eye_right_corner = (self.eye_right.left_corner, self.eye_right.right_corner)
             left_eye_top, left_eye_bottom = (self.eye_left.eye_upper, self.eye_left.eye_lower)
             right_eye_top, right_eye_bottom = (self.eye_right.eye_upper, self.eye_right.eye_lower)
@@ -179,9 +249,13 @@ class GazeTracking(object):
             
             cv2.circle(frame, (left_eye_left_corner[0], left_eye_left_corner[1]), 3, (0, 0, 255), -1)
             cv2.circle(frame, (left_eye_right_corner[0], left_eye_right_corner[1]), 3, (0, 0, 255), -1)
+            cv2.circle(frame, (left_eye_top[0], left_eye_top[1]), 3, (0, 0, 255), -1)
+            cv2.circle(frame, (left_eye_bottom[0], left_eye_bottom[1]), 3, (0, 0, 255), -1)
             cv2.circle(frame, (int(left_eye_center[0]), int(left_eye_center[1])), 5, (0, 0, 255), -1)
             cv2.circle(frame, (right_eye_left_corner[0], right_eye_left_corner[1]), 3, (0, 0, 255), -1)
             cv2.circle(frame, (right_eye_right_corner[0], right_eye_right_corner[1]), 3, (0, 0, 255), -1)
+            cv2.circle(frame, (right_eye_top[0], right_eye_top[1]), 3, (0, 0, 255), -1)
+            cv2.circle(frame, (right_eye_bottom[0], right_eye_bottom[1]), 3, (0, 0, 255), -1)
             cv2.circle(frame, (int(right_eye_center[0]), int(right_eye_center[1])), 5, (0, 0, 255), -1)
             cv2.line(frame, (left_eye_left_corner[0], left_eye_left_corner[1]), (x_left, y_left), color)
             cv2.line(frame, (left_eye_right_corner[0], left_eye_right_corner[1]), (x_left, y_left), color)

@@ -97,6 +97,11 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+#Visual Studio Settings
+.vs
+
+#Calibration file
+calibration_settings.txt
 # mkdocs documentation
 /site
 

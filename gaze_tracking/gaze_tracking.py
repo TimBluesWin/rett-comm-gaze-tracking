@@ -98,6 +98,16 @@ class GazeTracking(object):
             pupil_left = self.eye_left.pupil.y / (self.eye_left.center[1] * 2 - 10)
             pupil_right = self.eye_right.pupil.y / (self.eye_right.center[1] * 2 - 10)
             return (pupil_left + pupil_right) / 2
+    
+    def get_horizontal_ratio_from_eye_corners(self):
+        width = self.get_eye_width_left()
+        displacement = self.get_x_displacement_left()
+        return displacement / width
+    
+    #TODO: Implement vertical ratio.
+
+    def get_vertical_ratio_from_eye_corners(self):
+        return None
 
     def is_right(self):
         """Returns true if the user is looking to the right"""

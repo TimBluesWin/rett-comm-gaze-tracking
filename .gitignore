@@ -98,7 +98,7 @@ venv.bak/
 .ropeproject
 
 #Visual Studio Settings
-.vs
+.vs/
 
 #Calibration file
 calibration_settings.txt

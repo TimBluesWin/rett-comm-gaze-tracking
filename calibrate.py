@@ -63,7 +63,8 @@ while done == False:
     if state == "center":
         current_time = pygame.time.get_ticks()
         if gaze.pupils_located:
-            leftXCoordinates.append(gaze.get_x_displacement_left())
+            leftXCoordinates.append(gaze.get_horizontal_ratio_from_eye_corners())
+            #leftXCoordinates.append(gaze.get_x_displacement_left())
             #rightXCoordinates.append(gaze.get_x_displacement_right())
         #centerXCoordinates.append()
         #centerYCoordinates.append()
@@ -87,7 +88,7 @@ while done == False:
     elif state == "right":
         current_time = pygame.time.get_ticks()
         if gaze.pupils_located:
-            leftXCoordinates.append(gaze.get_x_displacement_left())
+            leftXCoordinates.append(gaze.get_horizontal_ratio_from_eye_corners())
             #rightXCoordinates.append(gaze.get_x_displacement_right())
         if current_time > wait_to:
             xCoordinate = (statistics.median(leftXCoordinates))
@@ -107,7 +108,7 @@ while done == False:
     elif state == "left":
         current_time = pygame.time.get_ticks()
         if gaze.pupils_located:
-            leftXCoordinates.append(gaze.get_x_displacement_left())
+            leftXCoordinates.append(gaze.get_horizontal_ratio_from_eye_corners())
         if current_time > wait_to:
             xCoordinate = (statistics.median(leftXCoordinates))
             f.write(str(xCoordinate) + "\n")

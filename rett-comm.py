@@ -58,12 +58,12 @@ while True:
     
     if gaze.pupils_located:
         #cv2.imshow("Eye", gaze.eye_left.frame)
-        print "Width is " + str(gaze.get_eye_width_left())
-        print "Center is " + str(gaze.get_eye_center_left())
-        print "Displacement is " + str(gaze.get_x_displacement_left())
+        print ("Width is " + str(gaze.get_eye_width_left()))
+        print ("Center is " + str(gaze.get_eye_center_left()))
+        print ("Displacement is " + str(gaze.get_x_displacement_left()))
         x_coordinates.append(int(gaze.get_x_coordinate()))
         if frame_count % 3 == 0:
-            median_x_coordinate = statistics.median(x_coordinates)
+            median_x_coordinate = statistics.mean(x_coordinates)
             ctypes.windll.user32.SetCursorPos(int(median_x_coordinate), int(0.5 * 768))
 		
         #os.system("xdotool mousemove " + str(int(gaze.get_x_coordinate())) + " " + str(gaze.vertical_ratio() * 768))

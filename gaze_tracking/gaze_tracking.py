@@ -1,6 +1,6 @@
 from __future__ import division
-#import pyautogui
-#import pylint
+import pyautogui
+import pylint
 import os
 import cv2
 import dlib
@@ -9,6 +9,8 @@ from .calibration import Calibration
 
 
 class GazeTracking(object):
+
+
     """
     This class tracks the user's gaze.
     It provides useful information like the position of the eyes
@@ -20,6 +22,10 @@ class GazeTracking(object):
         self.eye_left = None
         self.eye_right = None
         self.calibration = Calibration()
+        self.screenWidth = pyautogui.size()[0]
+        self.screenHeight = pyautogui.size()[1]
+    
+        self.border = 60
 
         # _face_detector is used to detect faces
         self._face_detector = dlib.get_frontal_face_detector()
@@ -63,6 +69,15 @@ class GazeTracking(object):
         """
         self.frame = frame
         self._analyze()
+
+    def leftmost_screen(self):
+        return self.border
+
+    def rightmost_screen(self):
+        return self.screenWidth - self.border
+    
+    def get_option_area_with_border(self):
+        return (self.rightmost_screen() - self.leftmost_screen()) / 2
 
     def pupil_left_coords(self):
         """Returns the coordinates of the left pupil"""
@@ -161,8 +176,8 @@ class GazeTracking(object):
             return displacement
     
     def get_left_eye_left_corner(self):
-        
-        return self.eye_left.left_corner
+        if self.pupils_located:
+            return self.eye_left.left_corner
 
     def get_right_eye_left_corner(self):
         if self.pupils_located:
@@ -196,42 +211,42 @@ class GazeTracking(object):
                 #Third line: Pas liat kiri
 				#We need to modify the thresholds according to how far our eyes
                 calibratedEyeWidth = data[3]
-                actualEyeWidth = self.get_eye_width_left()
-                adjustment_ratio = actualEyeWidth / float(calibratedEyeWidth)
-                centerX = float(data[0]) * adjustment_ratio
-                minX = float(data[1]) * adjustment_ratio
-                maxX = float(data[2]) * adjustment_ratio
+                #actualEyeWidth = self.get_eye_width_left()
+                #adjustment_ratio = actualEyeWidth / float(calibratedEyeWidth)
+                centerX = float(data[0])
+                minX = float(data[1])
+                maxX = float(data[2])
                 #centerX = float(data[0]) 
                 #minX = float(data[1])
                 #maxX = float(data[2])
-                displacement = self.get_x_displacement_left()
+                ratio = self.get_horizontal_ratio_from_eye_corners()
                 #print "Displacement of X Coordinate is " + str(displacement)
-                if displacement > maxX:
-                    displacement = maxX
-                elif displacement < minX:
-                    displacement = minX
-                if displacement <= centerX:
+                if ratio > maxX:
+                    ratio = maxX
+                elif ratio < minX:
+                    ratio = minX
+                if ratio <= centerX:
                     #That means we see right, thanks to the inversion at webcam
                     try:
                         #return 1366 - ((displacement - minX) / (centerX - minX)) * 688
-                        return 1306 - ((displacement - minX) / (centerX - minX)) * 623
+                        return self.rightmost_screen()- ((ratio - minX) / (centerX - minX)) * self.get_option_area_with_border()
                     except ZeroDivisionError:
 					    #If division by zero then failsafenya return paling tengah
-					    return 683
+                        return self.screenWidth / 2
                 else:
                     try:
                         #return ((maxX - displacement) / (maxX - centerX)) * 688
-                        return 60 + ((maxX - displacement) / (maxX - centerX)) * 623
+                        return self.leftmost_screen() + ((maxX - ratio) / (maxX - centerX)) * self.get_option_area_with_border()
                     except ZeroDivisionError:
-                        return 673
+                        return self.screenWidth / 2
                
             else:  
             #Take the region between the left corner and right corner, measure how much the displacement between center, and calculate the displacement against the 
                 displacement_left = self.pupil_left_coords()[0] - self.eye_left.left_corner[0]
-                print "Displacement left is " + str(displacement_left)
+                #print("Displacement left is " + str(displacement_left))
                 displacement_right = self.pupil_right_coords()[0] - self.eye_right.left_corner[0]
-                print "Displacement Right is " + str(displacement_right)
-                print "Eye Width is " + str(self.get_eye_width_left())
+                #print("Displacement Right is " + str(displacement_right))
+                #print("Eye Width is " + str(self.get_eye_width_left()))
             #print "X coordinate is " + str(((1- displacement_left / self.get_eye_width_left()) + (1-displacement_right / self.get_eye_width_right())) / 2 * 1366)
                 ratio_left = 1 - (displacement_left / self.get_eye_width_left())
             #ratio_right = 1 - (displacement_right / self.get_eye_width_right())
@@ -274,5 +289,4 @@ class GazeTracking(object):
             cv2.line(frame, (x_left, y_left - 5), (x_left, y_left + 5), color)
             cv2.line(frame, (x_right - 5, y_right), (x_right + 5, y_right), color)
             cv2.line(frame, (x_right, y_right - 5), (x_right, y_right + 5), color)
-
         return frame

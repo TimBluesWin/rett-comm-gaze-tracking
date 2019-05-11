@@ -58,6 +58,7 @@ while True:
     
     if gaze.pupils_located:
         #cv2.imshow("Eye", gaze.eye_left.frame)
+        cv2.imshow("Pupil", gaze.eye_left.pupil.iris_frame)
         print ("Width is " + str(gaze.get_eye_width_left()))
         print ("Center is " + str(gaze.get_eye_center_left()))
         print ("Displacement is " + str(gaze.get_x_displacement_left()))

@@ -60,6 +60,10 @@ class GazeTracking(object):
         except IndexError:
             self.eye_left = None
             self.eye_right = None
+        except cv2.error as e:
+            self.eye_left = None
+            self.eye_right = None
+            print("Terjadi kesalahan dalam pemrosesan muka \n" + sys.exec_info[2])
 
     def refresh(self, frame):
         """Refreshes the frame and analyzes it.
@@ -210,7 +214,7 @@ class GazeTracking(object):
                 #Second line: Pas liat kanan
                 #Third line: Pas liat kiri
 				#We need to modify the thresholds according to how far our eyes
-                calibratedEyeWidth = data[3]
+                #calibratedEyeWidth = data[3]
                 #actualEyeWidth = self.get_eye_width_left()
                 #adjustment_ratio = actualEyeWidth / float(calibratedEyeWidth)
                 centerX = float(data[0])
@@ -229,14 +233,14 @@ class GazeTracking(object):
                     #That means we see right, thanks to the inversion at webcam
                     try:
                         #return 1366 - ((displacement - minX) / (centerX - minX)) * 688
-                        return self.rightmost_screen()- ((ratio - minX) / (centerX - minX)) * self.get_option_area_with_border()
+                        return self.rightmost_screen()- ((ratio - minX) / (centerX - minX)) * 1.1 * self.get_option_area_with_border()
                     except ZeroDivisionError:
 					    #If division by zero then failsafenya return paling tengah
                         return self.screenWidth / 2
                 else:
                     try:
                         #return ((maxX - displacement) / (maxX - centerX)) * 688
-                        return self.leftmost_screen() + ((maxX - ratio) / (maxX - centerX)) * self.get_option_area_with_border()
+                        return self.leftmost_screen() + ((maxX - ratio) / (maxX - centerX)) * 1.1 * self.get_option_area_with_border()
                     except ZeroDivisionError:
                         return self.screenWidth / 2
                

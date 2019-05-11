@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "rett-comm.py", line 30, in <module>
+    gaze.refresh(frame)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\gaze_tracking.py", line 71, in refresh
+    self._analyze()
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\gaze_tracking.py", line 58, in _analyze
+    self.eye_right = Eye(frame, landmarks, 1, self.calibration)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\eye.py", line 30, in __init__
+    self._analyze(original_frame, landmarks, side, calibration)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\eye.py", line 138, in _analyze
+    self.pupil = Pupil(self.frame, threshold)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\pupil.py", line 17, in __init__
+    self.detect_iris(eye_frame)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\pupil.py", line 44, in detect_iris
+    self.iris_frame = self.image_processing(eye_frame, self.threshold)
+  File "C:\Users\Timmy\Documents\SGU\Rett Syndrome Project 2018\GazeTracking-master-WITHREFERENCESEYECORNER\gaze_tracking\pupil.py", line 32, in image_processing
+    new_frame = cv2.erode(new_frame, kernel, iterations=3)
+cv2.error: OpenCV(3.4.5) C:\projects\opencv-python\opencv\modules\core\src\matrix.cpp:757: error: (-215:Assertion failed) dims <= 2 && step[0] > 0 in function 'cv::Mat::locateROI'

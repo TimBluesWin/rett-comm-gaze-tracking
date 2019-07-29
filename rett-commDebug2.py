@@ -18,17 +18,10 @@ webcam = cv2.VideoCapture(0)
 # Not every frame, calculate only every 5 frames.
 
 frame_count = 0
-#x_coordinates = deque([], 3)
-#cv2.namedWindow("Detected", cv2.WINDOW_NORMAL)
-#cv2.resizeWindow("Detected", (100, 100))
 webbrowser.open("http://localhost/rettcomm/mainMenu3.php")
 cv2.namedWindow("Demo", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Demo", (100, 100))
-# pygame.mixer.init()
-# pygame.mixer.music.load('censor-beep-01.mp3')
 cv2.moveWindow("Demo", int(gaze.screenWidth / 2) - 100, int(gaze.screenHeight) - 220)
-
-#isDetected = np.zeros((300, 300, 3), np.uint8)
 left_border = gaze.border
 right_border = gaze.screenWidth - left_border
 center_y = int(gaze.screenHeight / 2)
@@ -49,7 +42,6 @@ while True:
             randomised_x_coordinate = random.randint(right_border - 10, right_border)
             ctypes.windll.user32.SetCursorPos(randomised_x_coordinate, center_y)
         else:
-            ctypes.windll.user32.SetCursorPos(int(current_x), int(0.5 * 768))        
-    #cv2.imshow("Detected", isDetected)
+            ctypes.windll.user32.SetCursorPos(int(current_x), int(0.5 * 768))
     if cv2.waitKey(1) == 27:
         break

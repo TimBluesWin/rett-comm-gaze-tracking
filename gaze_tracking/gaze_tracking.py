@@ -1,6 +1,5 @@
 from __future__ import division
-import pyautogui
-import pylint
+import ctypes
 import os
 import cv2
 import dlib
@@ -8,22 +7,21 @@ from .eye import Eye
 from .calibration import Calibration
 
 
+
 class GazeTracking(object):
-
-
     """
     This class tracks the user's gaze.
     It provides useful information like the position of the eyes
     and pupils and allows to know if the eyes are open or closed
     """
-
     def __init__(self):
         self.frame = None
         self.eye_left = None
         self.eye_right = None
         self.calibration = Calibration()
-        self.screenWidth = pyautogui.size()[0]
-        self.screenHeight = pyautogui.size()[1]
+        user32 = ctypes.windll.user32
+        self.screenWidth = user32.GetSystemMetrics(0)
+        self.screenHeight = user32.GetSystemMetrics(1)
     
         self.border = 60
 
@@ -52,18 +50,17 @@ class GazeTracking(object):
         frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         faces = self._face_detector(frame)
 
-        try:
-            landmarks = self._predictor(frame, faces[0])
-            self.eye_left = Eye(frame, landmarks, 0, self.calibration)
-            self.eye_right = Eye(frame, landmarks, 1, self.calibration)
-
-        except IndexError:
+        if len(faces) > 0:
+            try:
+                landmarks = self._predictor(frame, faces[0])
+                self.eye_left = Eye(frame, landmarks, 0, self.calibration)
+                self.eye_right = Eye(frame, landmarks, 1, self.calibration)
+            except cv2.error:
+                self.eye_left = None
+                self.eye_right = None				
+        else:
             self.eye_left = None
             self.eye_right = None
-        except cv2.error as e:
-            self.eye_left = None
-            self.eye_right = None
-            print("Terjadi kesalahan dalam pemrosesan muka \n" + sys.exec_info[2])
 
     def refresh(self, frame):
         """Refreshes the frame and analyzes it.
@@ -82,6 +79,9 @@ class GazeTracking(object):
     
     def get_option_area_with_border(self):
         return (self.rightmost_screen() - self.leftmost_screen()) / 2
+
+    def get_height(self):
+        return self.screenHeight
 
     def pupil_left_coords(self):
         """Returns the coordinates of the left pupil"""
@@ -119,8 +119,8 @@ class GazeTracking(object):
             return (pupil_left + pupil_right) / 2
     
     def get_horizontal_ratio_from_eye_corners(self):
-        width = self.get_eye_width_left()
-        displacement = self.get_x_displacement_left()
+        width = (self.get_eye_width_left() + self.get_eye_width_right()) / 2
+        displacement = (self.get_x_displacement_left() + self.get_x_displacement_right() ) / 2
         return displacement / width
     
     #TODO: Implement vertical ratio.
@@ -204,7 +204,7 @@ class GazeTracking(object):
 
     #We need to sesuaikan rationya, to accomodate different viewing distance.
 
-    def get_x_coordinate(self):
+    def get_displacement_from_center(self):
         if self.pupils_located:
             calibrationExists = os.path.isfile("calibration_settings.txt")
             if calibrationExists:
@@ -233,29 +233,36 @@ class GazeTracking(object):
                     #That means we see right, thanks to the inversion at webcam
                     try:
                         #return 1366 - ((displacement - minX) / (centerX - minX)) * 688
-                        return self.rightmost_screen()- ((ratio - minX) / (centerX - minX)) * 1.1 * self.get_option_area_with_border()
+                        return self.rightmost_screen()- ((ratio - minX) / (centerX - minX)) * self.get_option_area_with_border()
                     except ZeroDivisionError:
 					    #If division by zero then failsafenya return paling tengah
                         return self.screenWidth / 2
                 else:
                     try:
                         #return ((maxX - displacement) / (maxX - centerX)) * 688
-                        return self.leftmost_screen() + ((maxX - ratio) / (maxX - centerX)) * 1.1 * self.get_option_area_with_border()
+                        return self.leftmost_screen() + ((maxX - ratio) / (maxX - centerX)) * self.get_option_area_with_border()
                     except ZeroDivisionError:
                         return self.screenWidth / 2
                
-            else:  
-            #Take the region between the left corner and right corner, measure how much the displacement between center, and calculate the displacement against the 
-                displacement_left = self.pupil_left_coords()[0] - self.eye_left.left_corner[0]
-                #print("Displacement left is " + str(displacement_left))
-                displacement_right = self.pupil_right_coords()[0] - self.eye_right.left_corner[0]
-                #print("Displacement Right is " + str(displacement_right))
-                #print("Eye Width is " + str(self.get_eye_width_left()))
-            #print "X coordinate is " + str(((1- displacement_left / self.get_eye_width_left()) + (1-displacement_right / self.get_eye_width_right())) / 2 * 1366)
-                ratio_left = 1 - (displacement_left / self.get_eye_width_left())
-            #ratio_right = 1 - (displacement_right / self.get_eye_width_right())
-                return ratio_left * 1366
-
+            else:
+                center_x = 0.52 
+                min_x = 0.37 # looking right
+                max_x = 0.67 # looking left
+                current_x = self.get_horizontal_ratio_from_eye_corners()
+                #print(current_x)
+                if current_x > max_x:
+                    current_x = max_x
+                elif current_x < min_x:
+                    current_x = min_x
+                try:
+                    return (current_x - center_x) / (max_x - center_x)
+                except ZeroDivisionError:
+                    return 0
+	
+    def get_x_coordinate(self):
+        #print(self.get_displacement_from_center())
+        return self.screenWidth / 2 - self.get_displacement_from_center() * self.get_option_area_with_border()
+	
     def get_y_coordinate(self):
         return None
 
@@ -293,4 +300,9 @@ class GazeTracking(object):
             cv2.line(frame, (x_left, y_left - 5), (x_left, y_left + 5), color)
             cv2.line(frame, (x_right - 5, y_right), (x_right + 5, y_right), color)
             cv2.line(frame, (x_right, y_right - 5), (x_right, y_right + 5), color)
+
+        #height, width, depth = frame.shape
+        #imgScale = 1/4
+        #newX,newY = frame.shape[1]*imgScale, frame.shape[0]*imgScale
+        #newimg = cv2.resize(frame,(int(newX),int(newY)))
         return frame

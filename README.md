@@ -1,164 +1,25 @@
-# Gaze Tracking
+This is a program developed as part of my bachelor thesis, in order for the patients with Rett Syndrome to communicate by gazing one of the two available Activities of Daily Living (ADL) in the screen. It is made using Dlib and OpenCV framework on top of Python programming language. The algorithm of the program itself is inspired from antoinelame's gaze tracking program. However, during the writing of my bachelor's thesis
 
-![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)
-![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-[![GitHub stars](https://img.shields.io/github/stars/antoinelame/GazeTracking.svg?style=social)](https://github.com/antoinelame/GazeTracking/stargazers)
+All instructions here are assuming that you are using a Windows platform.
 
-This is a Python (2 and 3) library that provides a **webcam-based eye tracking system**. It gives you the exact position of the pupils and the gaze direction, in real time.
+<h2>Preparation</h2>
 
-[![Demo](https://i.imgur.com/WNqgQkO.gif)](https://youtu.be/YEZMk1P0-yw)
-
-## Installation
-
-Clone this project:
-
-```
-git clone https://github.com/antoinelame/GazeTracking.git
-```
-
-GazeTracking requires these dependencies:
-
-* NumPy
-* OpenCV 3.4
-* Dlib
-
-To install them:
-
-```
+<h3>1. Install CMake for Windows</h3>
+One way to do this is to download Visual Studio Tools 2022. Make sure that you select "Desktop Development with C++".
+<h3>2. Install Pythony</h3>
+The latest Python should work.
+<h3>3.Install requirements</h3> 
 pip install -r requirements.txt
-```
+<h3>4. Download Dlib Python directly</h3>
+I found out that installing the latest version of DLib directly using pip does not work, so I personally downloaded the DLib library directly from here:
 
-> The Dlib library has four primary prerequisites: Boost, Boost.Python, CMake and X11/XQuartx. If you doesn't have them, you can [read this article](https://www.pyimagesearch.com/2017/03/27/how-to-install-dlib/) to know how to easily install them.
+https://pypi.org/project/dlib/#files
 
-> OpenCV 4 is not supported yet, make sure to install version 3.4
+Then after the tar files are downloaded, I extracted the files, and inside the DLib files, execute the following commands:
 
-Run the demo:
+python -m build --wheel
+pip install dist/dlib-(version).whl - replace "(version)" with whatever version of DLib you're downloading.
 
-```
-python example.py
-```
+<h2>Running the program</h2>
 
-## Simple Demo
-
-```python
-import cv2
-from gaze_tracking import GazeTracking
-
-gaze = GazeTracking()
-webcam = cv2.VideoCapture(0)
-
-while True:
-    _, frame = webcam.read()
-    gaze.refresh(frame)
-
-    new_frame = gaze.annotated_frame()
-    text = ""
-
-    if gaze.is_right():
-        text = "Looking right"
-    elif gaze.is_left():
-        text = "Looking left"
-    elif gaze.is_center():
-        text = "Looking center"
-
-    cv2.putText(new_frame, text, (60, 60), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
-    cv2.imshow("Demo", new_frame)
-
-    if cv2.waitKey(1) == 27:
-        break
-```
-
-## Documentation
-
-In the following examples, ```gaze``` refers to an instance of the ```GazeTracking``` class.
-
-### Refresh the frame
-
-```python
-gaze.refresh()
-```
-
-Captures a new frame with the webcam and analyzes it.
-
-### Position of the left pupil
-
-```python
-gaze.pupil_left_coords()
-```
-
-Returns the coordinates (x,y) of the left pupil.
-
-### Position of the right pupil
-
-```python
-gaze.pupil_right_coords()
-```
-
-Returns the coordinates (x,y) of the right pupil.
-
-### Looking to the left
-
-```python
-gaze.is_left()
-```
-
-Returns `True` if the user is looking to the left.
-
-### Looking to the right
-
-```python
-gaze.is_right()
-```
-
-Returns `True` if the user is looking to the right.
-
-### Looking at the center
-
-```python
-gaze.is_center()
-```
-
-Returns `True` if the user is looking at the center.
-
-### Horizontal direction of the gaze
-
-```python
-ratio = gaze.horizontal_ratio()
-```
-
-Returns a number between 0.0 and 1.0 that indicates the horizontal direction of the gaze. The extreme right is 0.0, the center is 0.5 and the extreme left is 1.0.
-
-### Vertical direction of the gaze
-
-```python
-ratio = gaze.vertical_ratio()
-```
-
-Returns a number between 0.0 and 1.0 that indicates the vertical direction of the gaze. The extreme top is 0.0, the center is 0.5 and the extreme bottom is 1.0.
-
-### Blinking
-
-```python
-gaze.is_blinking()
-```
-
-Returns `True` if the user's eyes are closed.
-
-### Webcam frame
-
-```python
-frame = gaze.annotated_frame()
-```
-
-Returns the main frame with pupils highlighted.
-
-## You want to help?
-
-Your suggestions, bugs reports and pull requests are welcome and appreciated. You can also starring ⭐️ the project!
-
-If the detection of your pupils is not completely optimal, you can send me a video sample of you looking in different directions. I would use it to improve the algorithm.
-
-## Licensing
-
-This project is released by Antoine Lamé under the terms of the MIT Open Source License. View LICENSE for more information.
+<p>This program is designed to run with the web application, so make sure you have cloned the project "rett-comm-web-application" on the same folder as this project. To run the program, simply type "python rett-comm.py". You can now control the mouse cursor using your eyes. </p>

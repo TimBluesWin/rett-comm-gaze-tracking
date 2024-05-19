@@ -18,7 +18,7 @@ webcam = cv2.VideoCapture(0)
 # Not every frame, calculate only every 5 frames.
 
 frame_count = 0
-webbrowser.open("http://localhost/rettcomm/mainMenu3.php")
+webbrowser.open("http://localhost/rett-comm-web-application/indonesian/mainMenu.php")
 cv2.namedWindow("Demo", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("Demo", (100, 100))
 cv2.moveWindow("Demo", int(gaze.screenWidth / 2) - 100, int(gaze.screenHeight) - 220)

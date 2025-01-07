@@ -1,6 +1,4 @@
-This is a program developed as part of my bachelor thesis, in order for the patients with Rett Syndrome to communicate by gazing one of the two available Activities of Daily Living (ADL) in the screen. It is made using Dlib and OpenCV framework on top of Python programming language. The algorithm of the program itself is inspired from antoinelame's gaze tracking program. However, during the writing of my bachelor's thesis
-
-All instructions here are assuming that you are using a Windows platform.
+This is a program developed as part of my bachelor thesis, in order for the patients with Rett Syndrome to communicate by gazing one of the two available Activities of Daily Living (ADL) in the screen. It is made using Dlib and OpenCV framework on top of Python programming language. The algorithm of the program itself is inspired from antoinelame's gaze tracking program. However, during the writing of my bachelor's thesis some improvements were made in order for the program to track the eye (and hence, move the cursor more accurately.
 
 <h2>Preparation</h2>
 
@@ -10,8 +8,10 @@ One way to do this is to download Visual Studio Tools 2022. Make sure that you s
 The latest Python should work.
 <h3>3.Install requirements</h3> 
 pip install -r requirements.txt
-<h3>4. Download Dlib Python directly</h3>
-I found out that installing the latest version of DLib directly using pip does not work, so I personally downloaded the DLib library directly from here:
+<h3>4. Install Dlib</h3>
+pip install dlib
+<h3>4a. Download Dlib Python directly (Windows)</h3>
+On Windows, I found out that installing the latest version of DLib directly using pip does not work, so I personally downloaded the DLib library directly from here:
 
 https://pypi.org/project/dlib/#files
 
